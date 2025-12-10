@@ -81,7 +81,24 @@ export function DestinationForm({
           <input
             className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-slate-50 outline-none ring-brand-blue/60 focus:ring text-sm"
             value={values.lat}
-            onChange={(e) => onChange({ ...values, lat: e.target.value })}
+            onChange={(e) => {
+              const newValues = { ...values, lat: e.target.value };
+              onChange(newValues);
+              // Update placeholder pin in real-time if both coordinates are valid
+              const lat = Number.parseFloat(e.target.value);
+              const lng = Number.parseFloat(values.lng);
+              if (
+                Number.isFinite(lat) &&
+                Number.isFinite(lng) &&
+                onLocationSelect
+              ) {
+                onLocationSelect({
+                  lat,
+                  lng,
+                  label: values.label || "Destination",
+                });
+              }
+            }}
             placeholder="37.7739"
             inputMode="decimal"
           />
@@ -91,7 +108,24 @@ export function DestinationForm({
           <input
             className="rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-slate-50 outline-none ring-brand-blue/60 focus:ring text-sm"
             value={values.lng}
-            onChange={(e) => onChange({ ...values, lng: e.target.value })}
+            onChange={(e) => {
+              const newValues = { ...values, lng: e.target.value };
+              onChange(newValues);
+              // Update placeholder pin in real-time if both coordinates are valid
+              const lat = Number.parseFloat(values.lat);
+              const lng = Number.parseFloat(e.target.value);
+              if (
+                Number.isFinite(lat) &&
+                Number.isFinite(lng) &&
+                onLocationSelect
+              ) {
+                onLocationSelect({
+                  lat,
+                  lng,
+                  label: values.label || "Destination",
+                });
+              }
+            }}
             placeholder="-122.4312"
             inputMode="decimal"
           />
