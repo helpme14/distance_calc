@@ -106,11 +106,17 @@ function App() {
       setError("Destination coordinates must be valid numbers");
       return;
     }
-    const label = destInputs.label.trim() || "Destination";
-    const dest: Destination = { id: nanoid(), label, lat, lng };
+    const label =
+      destInputs.label.trim() || destination?.label || "Destination";
+    const dest: Destination = {
+      id: destination?.id || nanoid(),
+      label,
+      lat,
+      lng,
+    };
     setDestination(dest);
     setPlaceholderPin(null);
-    setDestInputs({ label: "", lat: "", lng: "" });
+    // Don't clear inputs anymore - keep them so user can continue editing
     setError(null);
   };
 
@@ -158,7 +164,7 @@ function App() {
           <DestinationForm
             values={destInputs}
             onChange={(next: DestInputs) => setDestInputs(next)}
-            onClear={() => setDestInputs({ label: "", lat: "", lng: "" })}
+            onClear={handleClearDestination}
             onSave={handleSaveDestination}
             onLocationSelect={handlePickDestination}
           />
