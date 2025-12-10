@@ -71,16 +71,16 @@ function App() {
   };
 
   const handlePickDestination = (coord: Coordinate) => {
-    // Update inputs to show coordinates
-    setDestInputs((prev) => ({
-      ...prev,
+    // Update inputs to show coordinates AND label
+    setDestInputs({
+      label: coord.label || destination?.label || "Destination",
       lat: coord.lat.toFixed(6),
       lng: coord.lng.toFixed(6),
-    }));
+    });
     // Force map mode to destination
     setMapMode("destination");
     // Directly set destination like origin does - no need to wait for Save button
-    const label = destInputs.label.trim() || coord.label || "Destination";
+    const label = coord.label || destination?.label || "Destination";
     const dest: Destination = {
       id: destination?.id || nanoid(),
       label,
