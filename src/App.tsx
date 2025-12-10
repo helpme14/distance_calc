@@ -82,7 +82,7 @@ function App() {
     // Directly set destination like origin does - no need to wait for Save button
     const label = coord.label || destination?.label || "Destination";
     const dest: Destination = {
-      id: destination?.id || nanoid(),
+      id: nanoid(), // Always generate new ID to force React re-render
       label,
       lat: coord.lat,
       lng: coord.lng,
@@ -109,7 +109,7 @@ function App() {
     const label =
       destInputs.label.trim() || destination?.label || "Destination";
     const dest: Destination = {
-      id: destination?.id || nanoid(),
+      id: nanoid(), // Always generate new ID to force React re-render
       label,
       lat,
       lng,
