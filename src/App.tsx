@@ -71,14 +71,24 @@ function App() {
   };
 
   const handlePickDestination = (coord: Coordinate) => {
+    // Update inputs to show coordinates
     setDestInputs((prev) => ({
       ...prev,
       lat: coord.lat.toFixed(6),
       lng: coord.lng.toFixed(6),
     }));
-    // Force map mode to destination so the preview pin is always visible
+    // Force map mode to destination
     setMapMode("destination");
-    setPlaceholderPin(coord);
+    // Directly set destination like origin does - no need to wait for Save button
+    const label = destInputs.label.trim() || coord.label || "Destination";
+    const dest: Destination = {
+      id: destination?.id || nanoid(),
+      label,
+      lat: coord.lat,
+      lng: coord.lng,
+    };
+    setDestination(dest);
+    setPlaceholderPin(null); // Clear placeholder since we have actual destination now
   };
 
   const handleOriginUpdate = () => {
