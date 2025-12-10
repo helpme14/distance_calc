@@ -163,7 +163,7 @@ export function MapView({
         )}
 
         {/* Show placeholder pin during search/selection before saving */}
-        {placeholderPin && !destination && mapMode === "destination" && (
+        {placeholderPin && !destination && (
           <Marker
             position={[placeholderPin.lat, placeholderPin.lng]}
             icon={destinationIcon}

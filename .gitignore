@@ -26,3 +26,8 @@ dist-ssr
 .env.example
 
 .env
+deploy.sh
+DEPLOYMENT.md
+SETUP_QUICK_REFERENCE.md
+nginx-config.conf
+certbot

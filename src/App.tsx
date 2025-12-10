@@ -76,6 +76,8 @@ function App() {
       lat: coord.lat.toFixed(6),
       lng: coord.lng.toFixed(6),
     }));
+    // Force map mode to destination so the preview pin is always visible
+    setMapMode("destination");
     setPlaceholderPin(coord);
   };
 
