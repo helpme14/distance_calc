@@ -99,27 +99,6 @@ function App() {
     }
   };
 
-  const handleSaveDestination = () => {
-    const lat = parseCoord(destInputs.lat);
-    const lng = parseCoord(destInputs.lng);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      setError("Destination coordinates must be valid numbers");
-      return;
-    }
-    const label =
-      destInputs.label.trim() || destination?.label || "Destination";
-    const dest: Destination = {
-      id: nanoid(), // Always generate new ID to force React re-render
-      label,
-      lat,
-      lng,
-    };
-    setDestination(dest);
-    setPlaceholderPin(null);
-    // Don't clear inputs anymore - keep them so user can continue editing
-    setError(null);
-  };
-
   const handleClearDestination = () => {
     setDestination(null);
     setDestInputs({ label: "", lat: "", lng: "" });
@@ -165,7 +144,6 @@ function App() {
             values={destInputs}
             onChange={(next: DestInputs) => setDestInputs(next)}
             onClear={handleClearDestination}
-            onSave={handleSaveDestination}
             onLocationSelect={handlePickDestination}
           />
 

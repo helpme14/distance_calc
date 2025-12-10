@@ -7,7 +7,6 @@ type DestinationInputs = {
 type Props = {
   values: DestinationInputs;
   onChange: (next: DestinationInputs) => void;
-  onSave: () => void;
   onClear: () => void;
   onLocationSelect?: (coord: {
     lat: number;
@@ -21,7 +20,6 @@ import { LocationSearch } from "./LocationSearch";
 export function DestinationForm({
   values,
   onChange,
-  onSave,
   onClear,
   onLocationSelect,
 }: Props) {
@@ -131,13 +129,6 @@ export function DestinationForm({
           />
         </label>
       </div>
-
-      <button
-        className="w-full rounded-xl bg-gradient-to-r from-brand-blue to-brand-coral px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-slate-950 shadow-md shadow-sky-500/20 transition hover:translate-y-[-1px]"
-        onClick={onSave}
-      >
-        ✓ Save destination
-      </button>
     </div>
   );
 }
