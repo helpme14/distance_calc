@@ -25,11 +25,20 @@ if (!ORS_API_KEY) {
   );
 }
 
-app.use(cors());
+app.use(
+  cors({
+    exposedHeaders: [
+      "x-ratelimit-remaining",
+      "x-ratelimit-limit",
+      "x-ratelimit-reset",
+    ],
+  })
+);
 app.use(express.json());
 
 app.post("/api/matrix", async (req, res) => {
-  const { origin, destinations } = req.body || {};
+  const { origin, destinations, travelMode } = req.body || {};
+  const mode = travelMode || "driving-car";
 
   if (!origin || !Array.isArray(destinations) || destinations.length === 0) {
     return res
@@ -53,7 +62,7 @@ app.post("/api/matrix", async (req, res) => {
 
   try {
     const response = await fetch(
-      "https://api.openrouteservice.org/v2/matrix/driving-car",
+      `https://api.openrouteservice.org/v2/matrix/${mode}`,
       {
         method: "POST",
         headers: {
@@ -79,14 +88,13 @@ app.post("/api/matrix", async (req, res) => {
 
     // Extract rate limit info from ORS response headers
     const remainingDay =
-      response.headers.get("x-ratelimit-trytomorrow") || "40000";
-    const remainingMinute =
-      response.headers.get("x-ratelimit-interval-searches") || "40";
+      response.headers.get("x-ratelimit-remaining") || "40000";
+    const remainingMinute = response.headers.get("x-ratelimit-limit") || "40";
 
-    // Include rate limit info in response headers
+    // Include rate limit info in response headers (use lowercase for consistency)
     res.set({
-      "X-RateLimit-TryTomorrow": remainingDay,
-      "X-RateLimit-Interval-Searches": remainingMinute,
+      "x-ratelimit-remaining": remainingDay,
+      "x-ratelimit-limit": remainingMinute,
     });
 
     res.json({ distances, durations });
@@ -100,7 +108,8 @@ app.post("/api/matrix", async (req, res) => {
 });
 
 app.post("/api/routes", async (req, res) => {
-  const { origin, destinations } = req.body || {};
+  const { origin, destinations, travelMode } = req.body || {};
+  const mode = travelMode || "driving-car";
 
   if (!origin || !Array.isArray(destinations) || destinations.length === 0) {
     return res
@@ -114,35 +123,48 @@ app.post("/api/routes", async (req, res) => {
   try {
     // Fetch routes for each destination from origin
     const routePromises = destinations.map((dest) =>
-      fetch(
-        "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: ORS_API_KEY,
-          },
-          body: JSON.stringify({
-            coordinates: [
-              [origin.lng, origin.lat],
-              [dest.lng, dest.lat],
-            ],
-          }),
-        }
-      )
+      fetch(`https://api.openrouteservice.org/v2/directions/${mode}/geojson`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: ORS_API_KEY,
+        },
+        body: JSON.stringify({
+          coordinates: [
+            [origin.lng, origin.lat],
+            [dest.lng, dest.lat],
+          ],
+        }),
+      })
     );
 
     const responses = await Promise.all(routePromises);
     const routes = [];
+    let rateLimit = null;
 
     for (const response of responses) {
       if (!response.ok) {
         console.error("[ors] route fetch failed", response.status);
         continue;
       }
+      // Capture rate limit headers from first successful response
+      if (!rateLimit) {
+        rateLimit = {
+          day: response.headers.get("x-ratelimit-remaining") || "40000",
+          minute: response.headers.get("x-ratelimit-limit") || "40",
+        };
+      }
       const data = await response.json();
       const coordinates = data.features?.[0]?.geometry?.coordinates || [];
       routes.push({ coordinates });
+    }
+
+    // Forward rate limit headers to client
+    if (rateLimit) {
+      res.set({
+        "x-ratelimit-remaining": rateLimit.day,
+        "x-ratelimit-limit": rateLimit.minute,
+      });
     }
 
     res.json(routes);

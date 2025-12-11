@@ -1,23 +1,49 @@
 import { useState, useEffect } from "react";
 
 export function Header() {
-  const [apiUsage, setApiUsage] = useState<{
-    remaining_day: number;
-    remaining_minute: number;
+  const [matrixQuota, setMatrixQuota] = useState<{
+    remaining_requests: number;
+    per_minute: number;
+    timestamp: string;
   }>({
-    remaining_day: 2000,
-    remaining_minute: 40,
+    remaining_requests: 500,
+    per_minute: 40,
+    timestamp: new Date().toISOString(),
+  });
+
+  const [routesQuota, setRoutesQuota] = useState<{
+    remaining_requests: number;
+    per_minute: number;
+    timestamp: string;
+  }>({
+    remaining_requests: 2000,
+    per_minute: 40,
+    timestamp: new Date().toISOString(),
   });
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      const stored = localStorage.getItem("api_usage");
-      if (stored) {
-        try {
-          const data = JSON.parse(stored);
-          setApiUsage(data);
-        } catch {
-          // Invalid JSON, skip
+    const handleStorageChange = (e?: StorageEvent) => {
+      if (e?.key === "api_quota_matrix" || !e) {
+        const stored = localStorage.getItem("api_quota_matrix");
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            setMatrixQuota(data);
+          } catch {
+            // Invalid JSON, skip
+          }
+        }
+      }
+
+      if (e?.key === "api_quota_routes" || !e) {
+        const stored = localStorage.getItem("api_quota_routes");
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            setRoutesQuota(data);
+          } catch {
+            // Invalid JSON, skip
+          }
         }
       }
     };
@@ -35,7 +61,7 @@ export function Header() {
           🗺️ OpenRouteService powered
         </p>
         <h1 className="font-display text-2xl sm:text-3xl md:text-4xl text-slate-50">
-          Janinestance (Distance) & ETA Calculator
+          Distance & ETA Calculator
         </h1>
         <p className="max-w-2xl text-xs sm:text-sm text-slate-300 md:text-base">
           Pick an origin, search for a destination, and get driving distances
@@ -43,19 +69,38 @@ export function Header() {
           scenarios.
         </p>
 
-        {/* API Rate Limits - Real-time */}
-        <div className="mt-4 flex flex-wrap gap-4 text-xs">
-          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
-            <span className="text-slate-400">Daily Remaining:</span>
-            <span className="font-semibold text-sky-300">
-              {apiUsage.remaining_day.toLocaleString()}
-            </span>
+        {/* API Rate Limit - Matrix & Routes Quotas */}
+        <div className="mt-4 flex flex-col gap-3 text-xs">
+          {/* Matrix API Quota */}
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 px-3 py-2">
+              <span className="text-slate-300">📊 Matrix API:</span>
+              <span className="font-semibold text-blue-300">
+                {matrixQuota.remaining_requests.toLocaleString()} / 500
+              </span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 px-3 py-2">
+              <span className="text-slate-300">⏱️ Per Minute:</span>
+              <span className="font-semibold text-blue-300">
+                {matrixQuota.per_minute} / 40
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
-            <span className="text-slate-400">Per Minute:</span>
-            <span className="font-semibold text-sky-300">
-              {apiUsage.remaining_minute}
-            </span>
+
+          {/* Routes API Quota */}
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
+              <span className="text-slate-300">🛣️ Routes API:</span>
+              <span className="font-semibold text-emerald-300">
+                {routesQuota.remaining_requests.toLocaleString()} / 2,000
+              </span>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2">
+              <span className="text-slate-300">⏱️ Per Minute:</span>
+              <span className="font-semibold text-emerald-300">
+                {routesQuota.per_minute} / 40
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { MapView } from "./components/MapView";
 import { Summary } from "./components/Summary";
@@ -12,6 +12,7 @@ import type {
 import { Header } from "./components/Header";
 import { OriginForm } from "./components/OriginForm";
 import { DestinationForm } from "./components/DestinationForm";
+import { TravelModeSelector } from "./components/TravelModeSelector";
 
 type CoordinateInputs = {
   lat: string;
@@ -53,11 +54,20 @@ function App() {
   const [routes, setRoutes] = useState<RouteGeometry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [travelMode, setTravelMode] = useState<
+    "driving-car" | "foot-walking" | "cycling-regular"
+  >("driving-car");
 
   const readyToCalculate = useMemo(
     () => origin && destination,
     [origin, destination]
   );
+
+  // Clear results when travel mode changes
+  useEffect(() => {
+    setResults(null);
+    setRoutes([]);
+  }, [travelMode]);
 
   const parseCoord = (value: string) => Number.parseFloat(value);
 
@@ -112,11 +122,15 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const matrix = await fetchMatrix(origin, [destination]);
+      const matrix = await fetchMatrix(origin, [destination], travelMode);
       setResults(matrix);
 
       // Fetch route geometries
-      const routeGeometries = await fetchRoutes(origin, [destination]);
+      const routeGeometries = await fetchRoutes(
+        origin,
+        [destination],
+        travelMode
+      );
       setRoutes(routeGeometries);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to reach backend");
@@ -131,8 +145,8 @@ function App() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 py-4 sm:px-4 sm:py-6 lg:py-8 grid gap-4 lg:gap-6 lg:grid-cols-[1fr_1fr]">
-        <section className="space-y-3 sm:space-y-4 flex flex-col">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 py-3 sm:px-4 sm:py-4 lg:py-6 grid gap-3 lg:gap-4 lg:grid-cols-[1fr_1fr] auto-rows-max lg:auto-rows-auto">
+        <section className="space-y-2 sm:space-y-3 flex flex-col lg:h-full">
           <OriginForm
             values={originInputs}
             onChange={(next: OriginInputs) => setOriginInputs(next)}
@@ -146,6 +160,8 @@ function App() {
             onClear={handleClearDestination}
             onLocationSelect={handlePickDestination}
           />
+
+          <TravelModeSelector value={travelMode} onChange={setTravelMode} />
 
           {error && (
             <div className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">

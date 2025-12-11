@@ -42,7 +42,7 @@ export function DestinationForm({
   return (
     <div className="rounded-lg sm:rounded-xl border border-white/10 bg-white/5 p-3 sm:p-4">
       <div className="mb-2 sm:mb-3 flex items-center justify-between gap-2">
-        <h3 className="text-base sm:text-lg font-semibold text-slate-50">
+        <h3 className="text-sm sm:text-base font-semibold text-slate-50">
           🔵 Destination
         </h3>
         <button
